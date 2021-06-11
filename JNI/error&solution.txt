@@ -1,0 +1,19 @@
+1. 内存泄漏
+Error:
+F/libc    (13002): Invalid address 0xbe081400 passed to free: invalid page index
+
+Reason:
+	AttachThreadScoped ats(g_jvm);
+	jbyte* frameData = ats.env()->GetByteArrayElements(data, JNI_FALSE);
+	if (frameData == NULL) {
+		ERROR_TRACE(HARDWARE_ENCODER_TAG << __FUNCTION__
+					<< ", get java byte array ptrfailed !");
+		return;
+	}
+	uint8_t * _ptr_out =reinterpret_cast<uint8_t*> (frameData);
+
+	INFO_TRACE(HARDWARE_ENCODER_TAG << __FUNCTION__ << "on DeliveryFrame");
+	hardwareEncoder->DeliveryFrame(_ptr_out, len);
+	// release the byte array
+	// ats.env()->ReleaseByteArrayElements(data, frameData, JNI_ABORT); /****ERROR here, need called*****/
+-----------------------------------------------------------------------------------------------------------
